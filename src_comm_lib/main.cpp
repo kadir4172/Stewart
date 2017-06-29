@@ -58,7 +58,13 @@ int zapis(float array[]){
 }
 int main(){
     //
-    p= new Platform(3);
+    int port_number;
+	std::cout << "Please enter port number, e.g. enter 3 for COM3 (Windows only)" << std::endl;
+	cin >> port_number;
+	cin.clear();
+	cin.ignore(10, '\n');
+
+    p= new Platform(port_number);
 
     //Set backlight of LCD ON
     if(!p->setBacklightOn()){
@@ -80,6 +86,7 @@ int main(){
     float current_val=25;
     short cnt=0;
     int znak=0;
+   	std::cout << "Platform is ready to take commands" << std::endl;
     if(true){
         while(znak!='n'){
             cnt++;

@@ -2,6 +2,6 @@ CC=g++
 CFLAGS=-Wall -O3
 
 lib:
-	$(CC) $(CFLAGS) -o platform example.cpp Serial.cpp
+	$(CC) $(CFLAGS) -o test_platform main.cpp Serial.cpp
 clean:
 	rm platform
