@@ -60,9 +60,9 @@ int main(){
     //
     int port_number;
 	std::cout << "Please enter port number, e.g. enter 3 for COM3 (Windows only)" << std::endl;
-	cin >> port_number;
-	cin.clear();
-	cin.ignore(10, '\n');
+	std::cin >> port_number;
+	std::cin.clear();
+	std::cin.ignore(10, '\n');
 
     p= new Platform(port_number);
 
