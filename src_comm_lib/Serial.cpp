@@ -246,18 +246,18 @@ CSerial::~CSerial()
 BOOL CSerial::Open(int nPort, int nBaud)
 {
 
-	if (m_bOpened) return(TRUE);
+	if( m_bOpened ) return( TRUE );
 
-	LPWSTR szPort = new TCHAR[10];
-	LPWSTR szComParams = new TCHAR[50];
+	char szPort[15];
+	char szComParams[50];
 	DCB dcb;
 
-	wsprintf(szPort, L"COM%d", nPort);
-	m_hIDComDev = CreateFile(szPort, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
-	if (m_hIDComDev == NULL) return(FALSE);
+	wsprintf( szPort, "COM%d", nPort );
+	m_hIDComDev = CreateFile( szPort, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
+	if( m_hIDComDev == NULL ) return( FALSE );
 
-	memset(&m_OverlappedRead, 0, sizeof(OVERLAPPED));
-	memset(&m_OverlappedWrite, 0, sizeof(OVERLAPPED));
+	memset( &m_OverlappedRead, 0, sizeof( OVERLAPPED ) );
+ 	memset( &m_OverlappedWrite, 0, sizeof( OVERLAPPED ) );
 
 	COMMTIMEOUTS CommTimeOuts;
 	CommTimeOuts.ReadIntervalTimeout = 0xFFFFFFFF;
@@ -265,36 +265,35 @@ BOOL CSerial::Open(int nPort, int nBaud)
 	CommTimeOuts.ReadTotalTimeoutConstant = 0;
 	CommTimeOuts.WriteTotalTimeoutMultiplier = 0;
 	CommTimeOuts.WriteTotalTimeoutConstant = 5000;
-	SetCommTimeouts(m_hIDComDev, &CommTimeOuts);
+	SetCommTimeouts( m_hIDComDev, &CommTimeOuts );
 
-	wsprintf(szComParams, L"COM%d:%d,n,8,1", nPort, nBaud);
+	wsprintf( szComParams, "COM%d:%d,n,8,1", nPort, nBaud );
 
-	m_OverlappedRead.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_OverlappedWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_OverlappedRead.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	m_OverlappedWrite.hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-	dcb.DCBlength = sizeof(DCB);
-	GetCommState(m_hIDComDev, &dcb);
+	dcb.DCBlength = sizeof( DCB );
+	GetCommState( m_hIDComDev, &dcb );
 	dcb.BaudRate = nBaud;
 	dcb.ByteSize = 8;
 	unsigned char ucSet;
-	ucSet = (unsigned char)((FC_RTSCTS & FC_DTRDSR) != 0);
-	ucSet = (unsigned char)((FC_RTSCTS & FC_RTSCTS) != 0);
-	ucSet = (unsigned char)((FC_RTSCTS & FC_XONXOFF) != 0);
-	if (!SetCommState(m_hIDComDev, &dcb) ||
-		!SetupComm(m_hIDComDev, 10000, 10000) ||
+	ucSet = (unsigned char) ( ( FC_RTSCTS & FC_DTRDSR ) != 0 );
+	ucSet = (unsigned char) ( ( FC_RTSCTS & FC_RTSCTS ) != 0 );
+	ucSet = (unsigned char) ( ( FC_RTSCTS & FC_XONXOFF ) != 0 );
+	if( !SetCommState( m_hIDComDev, &dcb ) ||
+		!SetupComm( m_hIDComDev, 10000, 10000 ) ||
 		m_OverlappedRead.hEvent == NULL ||
-		m_OverlappedWrite.hEvent == NULL){
+		m_OverlappedWrite.hEvent == NULL ){
 		DWORD dwError = GetLastError();
-		if (m_OverlappedRead.hEvent != NULL) CloseHandle(m_OverlappedRead.hEvent);
-		if (m_OverlappedWrite.hEvent != NULL) CloseHandle(m_OverlappedWrite.hEvent);
-		CloseHandle(m_hIDComDev);
-		return(FALSE);
-	}
+		if( m_OverlappedRead.hEvent != NULL ) CloseHandle( m_OverlappedRead.hEvent );
+		if( m_OverlappedWrite.hEvent != NULL ) CloseHandle( m_OverlappedWrite.hEvent );
+		CloseHandle( m_hIDComDev );
+		return( FALSE );
+		}
 
 	m_bOpened = TRUE;
-	delete[] szComParams;
-	delete[] szPort;
-	return(m_bOpened);
+
+	return( m_bOpened );
 
 }
 
