@@ -153,7 +153,7 @@ void setup(){
 //begin of serial communication
    Serial.begin(9600);
 //putting into base position
-   setPos(arr);   
+   setPos(arr);
 }
 
 //function calculating needed servo rotation value
@@ -254,7 +254,7 @@ unsigned char setPos(float pe[]){
         }
         servo[i].writeMicroseconds(servo_pos[i]);
     }
-    return errorcount;
+    return errorcount;    
 }
 
 //functions used for displaying actual platform position on 16x2 LCD display

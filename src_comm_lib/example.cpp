@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
+
+
 Platform* p;
 float getRand(){
     int value=rand()%4000-2000;
@@ -20,16 +23,23 @@ int zapis(float array[]){
             array[3]=0;
             array[4]=0;
             array[5]=0;
-             int resp=p->setPositions(array);
-             printf("val %d\n",resp);
+             int set_response=p->setPositions(array);
+             printf("Response from Ardu, errorcount: %d\n",set_response);
         }else{
             ret=1;
-            int resp=p->setPositions(array);
-            printf("val %d\n",resp);
+            int set_response=p->setPositions(array);
+            printf("Response from Ardu, errorcount: %d\n",set_response);
         }
     }
     float arr[]={0,0,0,0,0,0};
-    p->getPositions(arr);
+    bool get_response = p->getPositions(arr);
+    if(get_response){
+    	std::cout << "Succesfull Read" << std::endl;
+    }
+    else{
+    	std::cout << "Failure on Read" << std::endl;
+    }
+
     printf("%f %f %f %f %f %f \n",arr[0],arr[1],arr[2],arr[3],arr[4],arr[5]);
 
 
@@ -40,7 +50,7 @@ int main(){
     p= new Platform(3);
     float array[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     p->setPositions(array);
-    Sleep(1000);
+    sleep(1);
     float current_val=25;
     short cnt=0;
     int znak=0;
@@ -138,7 +148,7 @@ int main(){
                 array[k]=getRand();
             }
             p->setPositions(array);
-            Sleep(3000);
+            sleep(3);
         }
     }
     p->endCommunication();

@@ -46,6 +46,7 @@ Platform::Platform(int portno){
         }
     }
     sleep(3);
+
 #endif
 }
 
@@ -183,7 +184,7 @@ int Platform::setPositions(float * values){
 #endif
 }
 bool Platform::getPositions(float * values){
-        char val=GEPOSITION;
+    char val=GEPOSITION;
     if(!this->writeAction(val)){
         return false;
     }
@@ -219,7 +220,6 @@ bool Platform::getPositions(float * values){
                 return false;
             }
             values[i]=vall/100.00;
-
             fflush(this->arduino);
         }
         return true;
