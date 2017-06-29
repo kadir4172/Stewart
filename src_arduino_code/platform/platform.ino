@@ -18,17 +18,6 @@
 #include <Wire.h>
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
-#include <IRremote.h>
-
-//define values of IrDA codes send from used remote control
-#define MUTE_BUTTON 0x807F906F
-#define STANDBY_ON 0x807F20DF
-#define VOL_UP 0x807F609F
-#define VOL_DOWN 0x807FA05F
-#define DVD 0x807F08F7
-#define TV 0x807F8877
-#define GAME 0x807F48B7
-#define CD 0x807FC837
 
 //define of characters used for control of serial communication ['0'-'8']
 #define SETBACKOFF 48
@@ -43,7 +32,6 @@
 //defines of LCD pin numbers, most probably they dont have to be changed except of I2C_ADDR which value is neccessary and have to be changed.
 #define I2C_ADDR 0x27
 #define LCD 1
-#define IrDA 1
 #define BACKLIGHT_PIN 3
 #define En 2
 #define Rw 1
@@ -71,9 +59,6 @@ unsigned long time;
 
 //variable to store connected LCD
 LiquidCrystal_I2C lcd(I2C_ADDR, En, Rw, Rs, D4,D5,D6,D7);
-//IrReciever variables
-IRrecv irrecv(12); // Receive Ir on digital pin n 12
-decode_results results;
 
 //Array of servo objects
 Servo servo[6];
@@ -347,13 +332,7 @@ void loop()
             time=millis();
 #endif
             break;
-//enable of controlling platformy by IrDA remote
-        case SWITCHIRDA:
-#if IrDA
-            irrecv.enableIRIn();
-            useIrda=SWITCHIRDA;
-#endif
-            break;
+
 //reserved for future use - possiblity to send just servo timing values
 //main control would be executed on communicating partner
          case SETPOSITIONSINMS:
@@ -373,10 +352,6 @@ void loop()
          case STOPPRINTPOS:
             showPos=STOPPRINTPOS;
             shown=0;
-            break;
-//disable of controlling platformy by IrDA remote
-         case SWITCHIRDAOFF:
-            useIrda=SWITCHIRDAOFF;
             break;
 //return current position of platform
          case GEPOSITION:
@@ -406,48 +381,7 @@ void loop()
       }
    }
 #endif
-//this part is used for IrDA position control
-#if IrDA
-   if(useIrda==SWITCHIRDA&&irrecv.decode(&results)){
-      static byte val=0;
-      switch(results.value){
-         case MUTE_BUTTON:
-            val=1;
-            break;
-         case STANDBY_ON:
-            val=0;
-            break;
-         case VOL_UP:
-            if(val<=2){
-               arr[val]+=1;
-            }else{
-               arr[val]=radians((arr[val]*deg2rad)+0.4);
-            }
-            break;
-         case VOL_DOWN:
-            if(val<=2){
-               arr[val]-=1;
-            }else{
-               arr[val]=radians((arr[val]*deg2rad)-0.4);
-            }
-            break;
-         case DVD:
-            val=2;
-            break;
-         case TV:
-            val=3;
-            break;
-         case GAME:
-            val=4;
-            break;
-         case CD:
-            val=5;
-            break;
-      }
-      setPos(arr);
-      irrecv.resume(); // Continue receiving
-   }
-#endif
+
 
 }
 
