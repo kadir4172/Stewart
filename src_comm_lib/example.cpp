@@ -48,6 +48,20 @@ int zapis(float array[]){
 int main(){
     //
     p= new Platform(3);
+
+    //Set backlight of LCD ON
+    if(!p->setBacklightOn()){
+    	std::cout << "Cannot Turn LCD light ON" << std::endl;
+    	return 1;
+    }
+    sleep(1);
+
+    //Print location and rotations on LCD screen periodically
+    if(!p->printPositions()){
+    	std::cout << "Cannot Print Positions on LCD" << std::endl;
+    	return 1;
+    }
+
     float array[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     p->setPositions(array);
     sleep(1);
