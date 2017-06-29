@@ -22,9 +22,7 @@
 #define SETPOSITIONS 50
 #define PRINTPOS 51
 #define STOPPRINTPOS 52
-#define SWITCHIRDA 53
 #define SETPOSITIONSINMS 54
-#define SWITCHIRDAOFF 55
 #define GEPOSITION 56
 
 
@@ -91,23 +89,11 @@ bool Platform::printPositions(){
     return(this->writeAction(val));
 }
 
-bool Platform::irDaOn(){
-    char val=SWITCHIRDAOFF;
-    return(this->writeAction(val));
-}
-bool Platform::irDaOff(){
-    char val=SWITCHIRDA;
-    return(this->writeAction(val));
-}
 bool Platform::endPrintPositions(){
     char val=STOPPRINTPOS;
     return(this->writeAction(val));
 }
 bool Platform::setPositionsInMs(int *values){
-    char val=SWITCHIRDA;
-    if(!this->writeAction(val)){
-        return false;
-    }
 #ifdef _WIN32
     if(serial.IsOpened()){
         for(int i=0;i<6;i++){
