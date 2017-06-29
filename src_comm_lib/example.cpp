@@ -4,6 +4,17 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+    inline void Sleep_for_Seconds(int sec)
+    {
+       Sleep(sec * 1000);
+    };
+#elif defined __linux__
+    inline void Sleep_for_Seconds(int sec)
+    {
+       sleep(sec);
+    };
+#endif
 
 Platform* p;
 float getRand(){
@@ -54,17 +65,18 @@ int main(){
     	std::cout << "Cannot Turn LCD light ON" << std::endl;
     	return 1;
     }
-    sleep(1);
+    Sleep_for_Seconds(1);
 
     //Print location and rotations on LCD screen periodically
     if(!p->printPositions()){
     	std::cout << "Cannot Print Positions on LCD" << std::endl;
     	return 1;
     }
+    Sleep_for_Seconds(1);
 
     float array[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     p->setPositions(array);
-    sleep(1);
+    Sleep_for_Seconds(1);
     float current_val=25;
     short cnt=0;
     int znak=0;
@@ -162,7 +174,7 @@ int main(){
                 array[k]=getRand();
             }
             p->setPositions(array);
-            sleep(3);
+            Sleep_for_Seconds(3);
         }
     }
     p->endCommunication();
