@@ -153,7 +153,7 @@ void setup(){
 //begin of serial communication
    Serial.begin(9600);
 //putting into base position
-   setPos(arr);
+   setPos(arr);   
 }
 
 //function calculating needed servo rotation value
