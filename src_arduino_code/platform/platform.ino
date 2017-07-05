@@ -18,6 +18,9 @@
 #include <Wire.h>
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
 
 //define of characters used for control of serial communication ['0'-'8']
 #define SETBACKOFF 48
@@ -119,6 +122,8 @@ theta_angle=(pi/3-theta_p)/2, theta_r = radians(8),
 //translation vector representing this move
 static float M[3][3], rxp[3][6], T[3], H[3] = {0,0,z_home};
 
+
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 void setup(){
 //LCD inicialisation and turning on the backlight
 #if LCD
@@ -139,6 +144,20 @@ void setup(){
    Serial.begin(9600);
 //putting into base position
    setPos(arr);
+
+
+
+     /* Initialise the sensor */
+  if(!bno.begin())
+  {
+    /* There was a problem detecting the BNO055 ... check your connections */
+    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while(1);
+  }
+  
+  delay(1000);
+    
+  bno.setExtCrystalUse(true);
 }
 
 //function calculating needed servo rotation value
@@ -381,6 +400,21 @@ void loop()
       }
    }
 #endif
+
+/* Get a new sensor event */ 
+  sensors_event_t event; 
+  bno.getEvent(&event);
+  
+  /* Display the floating point data */
+  Serial.print("X: ");
+  Serial.print(event.orientation.x, 4);
+  Serial.print("\tY: ");
+  Serial.print(event.orientation.y, 4);
+  Serial.print("\tZ: ");
+  Serial.print(event.orientation.z, 4);
+  Serial.println("");
+  
+  delay(100);
 
 
 }
