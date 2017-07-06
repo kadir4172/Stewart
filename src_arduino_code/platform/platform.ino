@@ -403,9 +403,9 @@ void loop()
 
 /* Get a new sensor event */ 
   sensors_event_t event; 
-  bno.getEvent(&event);
+  bno.getEvent_Orientation(&event);
   
-  /* Display the floating point data */
+  
   Serial.print("X: ");
   Serial.print(event.orientation.x, 4);
   Serial.print("\tY: ");
@@ -413,7 +413,21 @@ void loop()
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
   Serial.println("");
-  
+
+
+/* Get a new sensor event */ 
+  sensors_event_t event2; 
+  bno.getEvent_Acceleration(&event2);
+      
+  /*
+  Serial.print("AccX: ");
+  Serial.print(event2.acceleration.x, 4);
+  Serial.print("\tAccY: ");
+  Serial.print(event2.acceleration.y, 4);
+  Serial.print("\tAccZ: ");
+  Serial.print(event2.acceleration.z, 4);
+  Serial.println("");
+  */
   delay(100);
 
 

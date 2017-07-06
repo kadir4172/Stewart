@@ -301,7 +301,8 @@ class Adafruit_BNO055 : public Adafruit_Sensor
     int8_t          getTemp   ( void );
 
     /* Adafruit_Sensor implementation */
-    bool  getEvent  ( sensors_event_t* );
+    bool  getEvent_Orientation  ( sensors_event_t* );
+    bool  getEvent_Acceleration  ( sensors_event_t* );
     void  getSensor ( sensor_t* );
 
     /* Functions to deal with raw calibration data */
