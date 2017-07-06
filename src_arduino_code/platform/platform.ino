@@ -56,6 +56,8 @@
 #define pi  3.14159
 #define deg2rad 180/pi
 #define deg30 pi/6
+
+#define IMU_CALIBRATION_ON_POWERUP 0
 //variables used for proper show of positions on LCD
 char shown=0, showPos=0, useIrda=0;
 unsigned long time;
@@ -157,7 +159,80 @@ void setup(){
   
   delay(1000);
     
-  bno.setExtCrystalUse(true);
+  bno.setExtCrystalUse(true);  
+
+
+  
+
+
+
+#if IMU_CALIBRATION_ON_POWERUP
+  while(!bno.isFullyCalibrated()){
+    uint8_t system, gyro, accel, mag;
+    bno.getCalibration(&system, &gyro, &accel, &mag);
+    Serial.print("Gyro: ");
+    Serial.print(gyro, 4);
+    Serial.print("\tAcc: ");
+    Serial.print(accel, 4);
+    Serial.print("\tmag: ");
+    Serial.print(mag, 4);
+    Serial.print("\tsys: ");
+    Serial.print(system, 4);
+    Serial.println("");      
+  }  
+    adafruit_bno055_offsets_t offsets_type;
+    bno.getSensorOffsets(offsets_type);
+    Serial.print("Accel_x_offset: ");
+    Serial.println(offsets_type.accel_offset_x);
+    Serial.print("Accel_y_offset: ");
+    Serial.println(offsets_type.accel_offset_y);
+    Serial.print("Accel_z_offset: ");
+    Serial.println(offsets_type.accel_offset_z);
+    Serial.print("Mag_x_offset: ");
+    Serial.println(offsets_type.mag_offset_x);
+    Serial.print("Mag_y_offset: ");
+    Serial.println(offsets_type.mag_offset_y);
+    Serial.print("Mag_z_offset: ");
+    Serial.println(offsets_type.mag_offset_z);
+    Serial.print("Gyro_x_offset: ");
+    Serial.println(offsets_type.gyro_offset_x);
+    Serial.print("Gyro_y_offset: ");
+    Serial.println(offsets_type.gyro_offset_y);
+    Serial.print("Gyro_z_offset: ");
+    Serial.println(offsets_type.gyro_offset_z);
+    Serial.print("Accel_radius_offset: ");
+    Serial.println(offsets_type.accel_radius);
+    Serial.print("Mag_radius_offset: ");
+    Serial.println(offsets_type.mag_radius);
+
+    bno.setSensorOffsets(offsets_type);
+    bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+#else
+    
+    adafruit_bno055_offsets_t offsets_type;
+    offsets_type.accel_offset_x = 65516;
+    offsets_type.accel_offset_y = 12;
+    offsets_type.accel_offset_z = 2;
+
+    offsets_type.mag_offset_x   = 65023;
+    offsets_type.mag_offset_y   = 625;
+    offsets_type.mag_offset_z   = 64742;
+
+    offsets_type.gyro_offset_x  = 0;
+    offsets_type.gyro_offset_y  = 65535;
+    offsets_type.gyro_offset_z  = 1;
+
+    offsets_type.accel_radius   = 1000;
+    offsets_type.mag_radius     = 793;
+
+    bno.setSensorOffsets(offsets_type);
+    
+    bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+#endif
+
+  
+  bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+  delay(100);
 }
 
 //function calculating needed servo rotation value
@@ -400,7 +475,7 @@ void loop()
       }
    }
 #endif
-
+   
 /* Get a new sensor event */ 
   sensors_event_t event; 
   bno.getEvent_Orientation(&event);
@@ -413,7 +488,7 @@ void loop()
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
   Serial.println("");
-
+  
 
 /* Get a new sensor event */ 
   sensors_event_t event2; 
@@ -429,7 +504,6 @@ void loop()
   Serial.println("");
   */
   delay(100);
-
 
 }
 
