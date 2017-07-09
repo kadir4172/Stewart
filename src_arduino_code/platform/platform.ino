@@ -159,14 +159,10 @@ void setup(){
   
   delay(1000);
     
-  bno.setExtCrystalUse(true);  
-
-
+  bno.setExtCrystalUse(true); 
+  bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
   
-
-
-
-#if IMU_CALIBRATION_ON_POWERUP
+#if IMU_CALIBRATION_ON_POWERUP   
   while(!bno.isFullyCalibrated()){
     uint8_t system, gyro, accel, mag;
     bno.getCalibration(&system, &gyro, &accel, &mag);
