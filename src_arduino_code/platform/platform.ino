@@ -35,7 +35,7 @@
 //defines of LCD pin numbers, most probably they dont have to be changed except of I2C_ADDR which value is neccessary and have to be changed.
 #define I2C_ADDR 0x27
 #define LCD 1
-#define IMU 1
+#define IMU 0
 #define BACKLIGHT_PIN 3
 #define En 2
 #define Rw 1
