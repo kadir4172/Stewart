@@ -35,6 +35,7 @@
 //defines of LCD pin numbers, most probably they dont have to be changed except of I2C_ADDR which value is neccessary and have to be changed.
 #define I2C_ADDR 0x27
 #define LCD 1
+#define IMU 1
 #define BACKLIGHT_PIN 3
 #define En 2
 #define Rw 1
@@ -149,6 +150,7 @@ void setup(){
 
 
 
+#if IMU
      /* Initialise the sensor */
   if(!bno.begin())
   {
@@ -161,6 +163,7 @@ void setup(){
     
   bno.setExtCrystalUse(true); 
   bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
+
   
 #if IMU_CALIBRATION_ON_POWERUP   
   while(!bno.isFullyCalibrated()){
@@ -229,6 +232,7 @@ void setup(){
   
   bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
   delay(100);
+#endif
 }
 
 //function calculating needed servo rotation value
@@ -471,7 +475,7 @@ void loop()
       }
    }
 #endif
-   
+#if IMU   
 /* Get a new sensor event */ 
   sensors_event_t event; 
   bno.getEvent_Orientation(&event);
@@ -500,6 +504,7 @@ void loop()
   Serial.println("");
   */
   delay(100);
+#endif
 
 }
 
