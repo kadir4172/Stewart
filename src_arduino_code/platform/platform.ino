@@ -34,8 +34,8 @@
 #define GEPOSITION 56
 //defines of LCD pin numbers, most probably they dont have to be changed except of I2C_ADDR which value is neccessary and have to be changed.
 #define I2C_ADDR 0x27
-#define LCD 1
-#define IMU 0
+#define LCD 0
+#define IMU 1
 #define BACKLIGHT_PIN 3
 #define En 2
 #define Rw 1
@@ -383,78 +383,8 @@ void showLoc(){
 //main control loop, obtain requested action from serial connection, then execute it
 void loop()
 {
+unsigned char error_count;
 
-   if(Serial.available()>0){
-      int input=Serial.read();
-      switch(input){
-//action to turn backlight off
-         case SETBACKOFF:
-#if LCD
-            lcd.setBacklight(LOW);
-#endif
-            break;
-//action to turn backlight on
-         case SETBACKON:
-#if LCD
-            lcd.setBacklight(HIGH);
-#endif
-            break;
-//action to change position of platform, obtain 6 values representing desired position
-         case SETPOSITIONS:
-            for(int i=0;i<6;i++){
-               long kk;
-               while(Serial.available()<4){
-                  ;
-               }
-               kk=(long)Serial.read();
-               kk=kk+(Serial.read()<<8);
-               kk=kk+(Serial.read()<<16);
-               kk=kk+(Serial.read()<<24);
-               if(i<3){
-                  arr[i]=(kk/100)/25.4;
-               }else{
-                  arr[i]=radians(kk/100.0);
-               }
-            }
-            Serial.write(setPos(arr));
-            Serial.flush();
-            break;
-//enable of showing current position on LCD
-         case PRINTPOS:
-#if LCD
-            showPos=PRINTPOS;
-            time=millis();
-#endif
-            break;
-
-//reserved for future use - possiblity to send just servo timing values
-//main control would be executed on communicating partner
-         case SETPOSITIONSINMS:
-            for(int i=0;i<6;i++){
-               long kk;
-               while(Serial.available()<4){
-                  ;
-               }
-               kk=(long)Serial.read();
-               kk=kk|(Serial.read()<<8);
-               kk=kk|(Serial.read()<<16);
-               kk=kk|(Serial.read()<<24);
-               servo[i].writeMicroseconds(kk);
-            }
-            break;
-//disable of showing current position on LCD
-         case STOPPRINTPOS:
-            showPos=STOPPRINTPOS;
-            shown=0;
-            break;
-//return current position of platform
-         case GEPOSITION:
-            retPos();
-            break;
-         default:
-            break;
-      }
-   }
 //helping subroutine to print current position
 #if LCD
    if(showPos==PRINTPOS){
@@ -488,38 +418,24 @@ void loop()
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
   Serial.println("");
-  
 
-/* Get a new sensor event */ 
-  sensors_event_t event2; 
-  bno.getEvent_Acceleration(&event2);
-      
-  /*
-  Serial.print("AccX: ");
-  Serial.print(event2.acceleration.x, 4);
-  Serial.print("\tAccY: ");
-  Serial.print(event2.acceleration.y, 4);
-  Serial.print("\tAccZ: ");
-  Serial.print(event2.acceleration.z, 4);
+  arr[0] = 0;
+  arr[1] = 0;
+  arr[2] = 0;
+  arr[3] = radians(event.orientation.y);
+  arr[4] = radians(event.orientation.z);
+  arr[5] = 0;
+  error_count = setPos(arr);
+  Serial.print("Error Count: ");
+  Serial.print(error_count);
   Serial.println("");
-  */
-  delay(100);
+  Serial.print("New servo positions: ");
+  for(int j=0 ; j<6; j++){
+    Serial.print("Servo " + j);
+    Serial.print("= ");
+    Serial.print(servo_pos[j]);
+    Serial.print("\t");            
+  }
+  delay(10);
 #endif
-
-}
-
-void retPos(){
-   for(int i=0;i<6;i++){
-       long val;
-       if(i<3){
-           val=(long)(arr[i]*100*25.4);
-       }else{
-           val=(long)(arr[i]*100*deg2rad);
-       }
-       Serial.write(val);
-       Serial.write((val>>8));
-       Serial.write((val>>16));
-       Serial.write((val>>24));
-       Serial.flush();
-   }
 }
