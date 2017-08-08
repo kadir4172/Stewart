@@ -22,6 +22,8 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
+//defines speed of repetitive maneuvers 1-15
+#define MANEUVER_SPEED 10
 //define of characters used for control of serial communication ['0'-'8']
 #define SETBACKOFF 48
 #define SETBACKON 49
@@ -35,7 +37,7 @@
 //defines of LCD pin numbers, most probably they dont have to be changed except of I2C_ADDR which value is neccessary and have to be changed.
 #define I2C_ADDR 0x27
 #define LCD 0
-#define IMU 1
+#define IMU 0
 #define BACKLIGHT_PIN 3
 #define En 2
 #define Rw 1
@@ -62,6 +64,12 @@
 //variables used for proper show of positions on LCD
 char shown=0, showPos=0, useIrda=0;
 unsigned long time;
+
+
+#if (( MANEUVER_SPEED > 15 ) || ( MANEUVER_SPEED < 1 ))
+  #error "MANEUVER_SPEED must be between 1-15"
+#endif
+
 
 //variable to store connected LCD
 LiquidCrystal_I2C lcd(I2C_ADDR, En, Rw, Rs, D4,D5,D6,D7);
@@ -285,10 +293,10 @@ void getmatrix(float pe[])
 
    M[0][1] = sin(psi)*cos(theta);
    M[1][1] = cos(psi)*cos(phi)+sin(psi)*sin(theta)*sin(phi);
-   M[2][1] = cos(theta)*sin(phi);
+   M[2][1] = -cos(psi)*sin(phi)+sin(psi)*sin(theta)*cos(phi);
 
    M[0][2] = -sin(theta);
-   M[1][2] = -cos(psi)*sin(phi)+sin(psi)*sin(theta)*cos(phi);
+   M[1][2] = cos(theta)*sin(phi);
    M[2][2] = cos(theta)*cos(phi);
 }
 //calculates wanted position of platform attachment poins using calculated rotation matrix
@@ -380,10 +388,110 @@ void showLoc(){
 }
 #endif
 
-//main control loop, obtain requested action from serial connection, then execute it
+//main control loop
 void loop()
 {
-unsigned char error_count;
+  static float command = 0;
+  static int    channel = 0;
+  static float cmd_arr[6]={0,0.0,0, radians(0),radians(0),radians(0)};
+  static int cmd_state = 1;
+  unsigned char error_count;
+  float rate = (float)MANEUVER_SPEED / 10.0; 
+  switch (cmd_state){
+  case 1:
+   command += rate;
+   if(command >= 25.0){
+    command = 25.0;
+    cmd_state += 1;
+    }
+    cmd_arr[channel] = command;
+  break;
+  case 2:
+   command -= rate;
+   if(command <= -25.0){
+    command = -25.0;
+    cmd_state += 1;
+    }
+    cmd_arr[channel] = command;
+  break;
+  case 3:
+   command += rate;
+   cmd_arr[channel] = command;
+   if(command >= 0.0){
+    command = 0.0;
+    cmd_state = 1;
+    cmd_arr[channel] = command;
+    if(channel >= 5){
+      channel = 0;
+      }
+    else{
+      channel  += 1;  
+      }    
+    }  
+  break;
+  default:
+  break;
+  }
+
+  //unit conversions and saturations
+
+  //x axis between convert from +/-25mm to inches
+  cmd_arr[0] = cmd_arr[0] / 25.4; 
+
+  //y axis between convert from +/-25mm to inches
+  cmd_arr[1] = cmd_arr[1] / 25.4;
+
+  //limit z axis with -13.0 mm from below.
+  if(cmd_arr[2] < -13.0){   
+    cmd_arr[2] = -13.0;
+    }
+
+  //z axis between convert from +25 -15mm to inches
+  cmd_arr[2] = cmd_arr[2] / 25.4;
+
+  //Roll axis +/- 15degree to radians
+  cmd_arr[3] = radians((cmd_arr[3] * 15.0) / 25.0);
+
+  //Pitch axis +/- 15degree to radians
+  cmd_arr[4] = radians((cmd_arr[4] * 15.0) / 25.0);
+
+  //Yaw axis +/- 25degree to radians
+  cmd_arr[5] = radians(cmd_arr[5]);
+
+
+  Serial.print("arr0: ");
+  Serial.print(cmd_arr[0], 4);
+  Serial.print("\tarr1: ");
+  Serial.print(cmd_arr[1], 4);
+  Serial.print("\tarr2: ");
+  Serial.print(cmd_arr[2], 4);
+  Serial.print("\tarr3: ");
+  Serial.print(cmd_arr[3], 4);
+  Serial.print("\tarr4: ");
+  Serial.print(cmd_arr[4], 4);
+  Serial.print("\tarr5: ");
+  Serial.print(cmd_arr[5], 4);  
+  Serial.println("");
+
+  
+  error_count = setPos(cmd_arr);
+  
+  Serial.print("Error Count: ");
+  Serial.print(error_count);
+  Serial.println("");
+  Serial.print("New servo positions: ");
+  for(int j=0 ; j<6; j++){
+    Serial.print("Servo ");
+    Serial.print(j);
+    Serial.print("= ");
+    Serial.print(servo_pos[j]);
+    Serial.print("\t");            
+  }
+  
+  delay(10);
+
+
+  
 
 //helping subroutine to print current position
 #if LCD
